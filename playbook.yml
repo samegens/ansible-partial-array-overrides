@@ -1,0 +1,29 @@
+---
+- name: test
+  hosts: nodes
+  connection: local
+  tasks:
+    - name: Load generic vars
+      ansible.builtin.include_vars:
+        file: generic/all.yml
+
+    - name: Show original var
+      ansible.builtin.debug:
+        var: some_var
+
+    - name: Patch some_var with some_var_overrides
+      ansible.builtin.set_fact:
+        some_var_patched: >-
+          {{ some_var_patched | default([]) +
+          [item | combine((some_var_overrides | selectattr('name', 'equalto', item.name) | first) | default({})) ] }}
+      loop: "{{ some_var }}"
+      when: some_var_overrides is defined
+
+    - name: Assign patched var to original
+      ansible.builtin.set_fact:
+        some_var: "{{ some_var_patched }}"
+      when: some_var_overrides is defined
+
+    - name: Show patched var
+      ansible.builtin.debug:
+        var: some_var

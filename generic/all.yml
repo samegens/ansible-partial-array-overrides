@@ -1,0 +1,5 @@
+some_var:
+  - name: subvar1
+    value: generic
+  - name: subvar2
+    value: generic

@@ -1,0 +1,4 @@
+---
+some_var_overrides:
+  - name: subvar1
+    value: node1
