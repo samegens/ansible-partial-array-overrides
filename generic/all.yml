@@ -3,3 +3,9 @@ some_var:
     value: generic
   - name: subvar2
     value: generic
+
+some_other_var:
+  - name: subvar3
+    value: generic
+  - name: subvar4
+    value: generic

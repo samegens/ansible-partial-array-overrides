@@ -1,0 +1,27 @@
+---
+
+- name: Patch var {{ var_pair.original_var }} with overrides
+  when: lookup('vars', var_pair.overrides_var, default=[]) | length > 0
+  block:
+    - name: Show original {{ var_pair.original_var }}
+      ansible.builtin.debug:
+        var: "{{ var_pair.original_var }}"
+
+    - name: Clear patched_var
+      ansible.builtin.set_fact:
+        patched_var: []
+
+    - name: Generate patched var
+      ansible.builtin.set_fact:
+        patched_var: >-
+          {{ patched_var | default([]) +
+          [item | combine((lookup('vars', var_pair.overrides_var, default=[]) | selectattr('name', 'equalto', item.name) | first) | default({})) ] }}
+      loop: "{{ lookup('vars', var_pair.original_var) }}"
+
+    - name: Assign patched var to original  # noqa: var-naming
+      ansible.builtin.set_fact:
+        "{{ var_pair.original_var }}": "{{ patched_var }}"
+
+    - name: Show patched {{ var_pair.original_var }}
+      ansible.builtin.debug:
+        var: "{{ var_pair.original_var }}"

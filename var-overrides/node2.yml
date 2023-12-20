@@ -2,3 +2,7 @@
 some_var_overrides:
   - name: subvar2
     value: node2
+
+some_other_var_overrides:
+  - name: subvar4
+    value: node2

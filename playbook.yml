@@ -7,23 +7,39 @@
       ansible.builtin.include_vars:
         file: generic/all.yml
 
-    - name: Show original var
+    # - name: Show original var
+    #   ansible.builtin.debug:
+    #     var: some_var
+
+    # - name: Patch some_var with some_var_overrides
+    #   ansible.builtin.set_fact:
+    #     some_var_patched: >-
+    #       {{ some_var_patched | default([]) +
+    #       [item | combine((some_var_overrides | selectattr('name', 'equalto', item.name) | first) | default({})) ] }}
+    #   loop: "{{ some_var }}"
+    #   when: some_var_overrides is defined
+
+    # - name: Assign patched var to original
+    #   ansible.builtin.set_fact:
+    #     some_var: "{{ some_var_patched }}"
+    #   when: some_var_overrides is defined
+
+
+    - name: Patch vars
+      ansible.builtin.include_tasks:
+        file: tasks/loop_patch_var.yml
+      loop:
+        - original_var: "some_var"
+          overrides_var: "some_var_overrides"
+        - original_var: "some_other_var"
+          overrides_var: "some_other_var_overrides"
+      loop_control:
+        loop_var: var_pair
+
+    - name: Show final some_var
       ansible.builtin.debug:
         var: some_var
 
-    - name: Patch some_var with some_var_overrides
-      ansible.builtin.set_fact:
-        some_var_patched: >-
-          {{ some_var_patched | default([]) +
-          [item | combine((some_var_overrides | selectattr('name', 'equalto', item.name) | first) | default({})) ] }}
-      loop: "{{ some_var }}"
-      when: some_var_overrides is defined
-
-    - name: Assign patched var to original
-      ansible.builtin.set_fact:
-        some_var: "{{ some_var_patched }}"
-      when: some_var_overrides is defined
-
-    - name: Show patched var
+    - name: Show final some_other_var
       ansible.builtin.debug:
-        var: some_var
+        var: some_other_var
