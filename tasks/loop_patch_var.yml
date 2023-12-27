@@ -1,15 +1,21 @@
 ---
-- name: Determine variable name for overrides and extras
+- name: Set variable names
   ansible.builtin.set_fact:
     overrides_var_name: "{{ original_var_name }}_overrides"
     extras_var_name: "{{ original_var_name }}_extras"
 
+- name: Retrieve overrides and extras
+  ansible.builtin.set_fact:
+    overrides: "{{ lookup('vars', overrides_var_name, default=[]) }}"
+    extras: "{{ lookup('vars', extras_var_name, default=[]) }}"
+
+- name: Set helper vars
+  ansible.builtin.set_fact:
+    overrides_exist: "{{ overrides | length > 0 }}"
+
 - name: Patch var {{ original_var_name }} with overrides
-  when: lookup('vars', overrides_var_name, default=[]) | length > 0
+  when: overrides_exist
   block:
-    - name: Retrieved overrides
-      ansible.builtin.set_fact:
-        overrides: "{{ lookup('vars', overrides_var_name) }}"
 
     - name: Clear patched_var
       ansible.builtin.set_fact:
@@ -17,10 +23,11 @@
 
     - name: Generate patched var
       ansible.builtin.set_fact:
-        patched_var: "{{ patched_var + [item | combine(override) ] }}"
+        patched_var: "{{ patched_var + [patched_item] }}"
       loop: "{{ lookup('vars', original_var_name) }}"
       vars:
         override: "{{ (overrides | selectattr('name', 'equalto', item.name) | first) | default({}) }}"
+        patched_item: "{{ item | combine(override) }}"
 
     - name: Assign patched var to {{ original_var_name }}  # noqa: var-naming
       ansible.builtin.set_fact:
@@ -28,5 +35,4 @@
 
 - name: Add extra values to {{ original_var_name }}  # noqa: var-naming
   ansible.builtin.set_fact:
-    "{{ original_var_name }}": "{{ lookup('vars', original_var_name) + [item] }}"
-  loop: "{{ lookup('vars', extras_var_name, default=[]) }}"
+    "{{ original_var_name }}": "{{ lookup('vars', original_var_name) + extras }}"
