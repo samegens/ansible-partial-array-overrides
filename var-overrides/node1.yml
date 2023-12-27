@@ -3,6 +3,14 @@ some_var_overrides:
   - name: subvar1
     value: node1
 
+some_var_extras:
+  - name: subvar3
+    value: node1
+
 some_other_var_overrides:
   - name: subvar3
+    value: node1
+
+some_other_var_extras:
+  - name: subvar5
     value: node1

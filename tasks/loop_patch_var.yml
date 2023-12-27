@@ -1,11 +1,15 @@
 ---
+- name: Determine variable name for overrides and extras
+  ansible.builtin.set_fact:
+    overrides_var_name: "{{ original_var_name }}_overrides"
+    extras_var_name: "{{ original_var_name }}_extras"
 
-- name: Patch var {{ var_pair.original_var }} with overrides
-  when: lookup('vars', var_pair.overrides_var, default=[]) | length > 0
+- name: Patch var {{ original_var_name }} with overrides
+  when: lookup('vars', overrides_var_name, default=[]) | length > 0
   block:
-    - name: Show original {{ var_pair.original_var }}
-      ansible.builtin.debug:
-        var: "{{ var_pair.original_var }}"
+    - name: Retrieved overrides
+      ansible.builtin.set_fact:
+        overrides: "{{ lookup('vars', overrides_var_name) }}"
 
     - name: Clear patched_var
       ansible.builtin.set_fact:
@@ -13,15 +17,16 @@
 
     - name: Generate patched var
       ansible.builtin.set_fact:
-        patched_var: >-
-          {{ patched_var | default([]) +
-          [item | combine((lookup('vars', var_pair.overrides_var, default=[]) | selectattr('name', 'equalto', item.name) | first) | default({})) ] }}
-      loop: "{{ lookup('vars', var_pair.original_var) }}"
+        patched_var: "{{ patched_var + [item | combine(override) ] }}"
+      loop: "{{ lookup('vars', original_var_name) }}"
+      vars:
+        override: "{{ (overrides | selectattr('name', 'equalto', item.name) | first) | default({}) }}"
 
-    - name: Assign patched var to original  # noqa: var-naming
+    - name: Assign patched var to {{ original_var_name }}  # noqa: var-naming
       ansible.builtin.set_fact:
-        "{{ var_pair.original_var }}": "{{ patched_var }}"
+        "{{ original_var_name }}": "{{ patched_var }}"
 
-    - name: Show patched {{ var_pair.original_var }}
-      ansible.builtin.debug:
-        var: "{{ var_pair.original_var }}"
+- name: Add extra values to {{ original_var_name }}  # noqa: var-naming
+  ansible.builtin.set_fact:
+    "{{ original_var_name }}": "{{ lookup('vars', original_var_name) + [item] }}"
+  loop: "{{ lookup('vars', extras_var_name, default=[]) }}"

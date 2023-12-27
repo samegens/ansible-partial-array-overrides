@@ -11,12 +11,10 @@
       ansible.builtin.include_tasks:
         file: tasks/loop_patch_var.yml
       loop:
-        - original_var: "some_var"
-          overrides_var: "some_var_overrides"
-        - original_var: "some_other_var"
-          overrides_var: "some_other_var_overrides"
+        - some_var
+        - some_other_var
       loop_control:
-        loop_var: var_pair
+        loop_var: original_var_name
 
     - name: Show final some_var
       ansible.builtin.debug:
