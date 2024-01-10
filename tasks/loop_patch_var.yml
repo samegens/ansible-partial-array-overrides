@@ -13,7 +13,7 @@
   ansible.builtin.set_fact:
     overrides_exist: "{{ overrides | length > 0 }}"
 
-- name: Patch var {{ original_var_name }} with overrides
+- name: Apply overrides to var {{ original_var_name }}
   when: overrides_exist
   block:
 
