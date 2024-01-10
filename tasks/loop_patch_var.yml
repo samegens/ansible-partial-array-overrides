@@ -1,38 +1,41 @@
 ---
-- name: Set variable names
-  ansible.builtin.set_fact:
-    overrides_var_name: "{{ original_var_name }}_overrides"
-    extras_var_name: "{{ original_var_name }}_extras"
-
-- name: Retrieve overrides and extras
-  ansible.builtin.set_fact:
-    overrides: "{{ lookup('vars', overrides_var_name, default=[]) }}"
-    extras: "{{ lookup('vars', extras_var_name, default=[]) }}"
-
-- name: Set helper vars
-  ansible.builtin.set_fact:
-    overrides_exist: "{{ overrides | length > 0 }}"
-
-- name: Apply overrides to var {{ original_var_name }}
-  when: overrides_exist
+- name: Patch variables
+  tags: always
   block:
-
-    - name: Clear patched_var
+    - name: Set variable names
       ansible.builtin.set_fact:
-        patched_var: []
+        overrides_var_name: "{{ original_var_name }}_overrides"
+        extras_var_name: "{{ original_var_name }}_extras"
 
-    - name: Generate patched var
+    - name: Retrieve overrides and extras
       ansible.builtin.set_fact:
-        patched_var: "{{ patched_var + [patched_item] }}"
-      loop: "{{ lookup('vars', original_var_name) }}"
-      vars:
-        override: "{{ (overrides | selectattr('name', 'equalto', item.name) | first) | default({}) }}"
-        patched_item: "{{ item | combine(override) }}"
+        overrides: "{{ lookup('vars', overrides_var_name, default=[]) }}"
+        extras: "{{ lookup('vars', extras_var_name, default=[]) }}"
 
-    - name: Assign patched var to {{ original_var_name }}  # noqa: var-naming
+    - name: Set helper vars
       ansible.builtin.set_fact:
-        "{{ original_var_name }}": "{{ patched_var }}"
+        overrides_exist: "{{ overrides | length > 0 }}"
 
-- name: Add extra values to {{ original_var_name }}  # noqa: var-naming
-  ansible.builtin.set_fact:
-    "{{ original_var_name }}": "{{ lookup('vars', original_var_name) + extras }}"
+    - name: Apply overrides to var {{ original_var_name }}
+      when: overrides_exist
+      block:
+
+        - name: Clear patched_var
+          ansible.builtin.set_fact:
+            patched_var: []
+
+        - name: Generate patched var
+          ansible.builtin.set_fact:
+            patched_var: "{{ patched_var + [patched_item] }}"
+          loop: "{{ lookup('vars', original_var_name) }}"
+          vars:
+            override: "{{ (overrides | selectattr('name', 'equalto', item.name) | first) | default({}) }}"
+            patched_item: "{{ item | combine(override) }}"
+
+        - name: Assign patched var to {{ original_var_name }}  # noqa: var-naming
+          ansible.builtin.set_fact:
+            "{{ original_var_name }}": "{{ patched_var }}"
+
+    - name: Add extra values to {{ original_var_name }}  # noqa: var-naming
+      ansible.builtin.set_fact:
+        "{{ original_var_name }}": "{{ lookup('vars', original_var_name) + extras }}"
