@@ -2,6 +2,7 @@
 - name: Test partial array overrides
   hosts: nodes
   connection: local
+  gather_facts: false
   tasks:
     - name: Load generic vars
       ansible.builtin.include_vars:
@@ -23,3 +24,77 @@
     - name: Show final some_other_var
       ansible.builtin.debug:
         var: some_other_var
+
+    - name: Assert node 1 some_var
+      ansible.builtin.assert:
+        that: some_var == expected_some_var
+      vars:
+        expected_some_var:
+          - name: subvar1
+            value: node1
+          - name: subvar2
+            value: generic
+          - name: subvar3
+            value: node1
+      when: inventory_hostname == 'node1'
+
+    - name: Assert node 1 some_other_var
+      ansible.builtin.assert:
+        that: some_other_var == expected_some_other_var
+      vars:
+        expected_some_other_var:
+          - name: subvar3
+            value: node1
+          - name: subvar4
+            value: generic
+          - name: subvar5
+            value: node1
+      when: inventory_hostname == 'node1'
+
+    - name: Assert node 2 some_var
+      ansible.builtin.assert:
+        that: some_var == expected_some_var
+      vars:
+        expected_some_var:
+          - name: subvar1
+            value: generic
+          - name: subvar2
+            value: node2
+          - name: subvar3
+            value: node2
+      when: inventory_hostname == 'node2'
+
+    - name: Assert node 2 some_other_var
+      ansible.builtin.assert:
+        that: some_other_var == expected_some_other_var
+      vars:
+        expected_some_other_var:
+          - name: subvar3
+            value: generic
+          - name: subvar4
+            value: node2
+          - name: subvar5
+            value: node2
+      when: inventory_hostname == 'node2'
+
+    - name: Assert node 3 some_var
+      ansible.builtin.assert:
+        that: some_var == expected_some_var
+      vars:
+        expected_some_var:
+          - name: subvar1
+            value: generic
+          - name: subvar2
+            value: generic
+      when: inventory_hostname == 'node3'
+
+    - name: Assert node 3 some_other_var
+      ansible.builtin.assert:
+        that: some_other_var == expected_some_other_var
+      vars:
+        expected_some_other_var:
+          - name: subvar3
+            value: generic
+          - name: subvar4
+            value: generic
+      when: inventory_hostname == 'node3'

@@ -4,7 +4,7 @@ PoC of using vars files to partially override entries in an array variable.
 
 Regular use:
 
-```ansible-playbook playbook.yml --limit=node1```
+```ansible-playbook playbook.yml --limit=node3```
 
 Override vars for node1:
 
