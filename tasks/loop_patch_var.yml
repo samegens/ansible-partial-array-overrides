@@ -6,15 +6,34 @@
       ansible.builtin.set_fact:
         overrides_var_name: "{{ original_var_name }}_overrides"
         extras_var_name: "{{ original_var_name }}_extras"
+        removals_var_name: "{{ original_var_name }}_removals"
 
     - name: Retrieve overrides and extras
       ansible.builtin.set_fact:
         overrides: "{{ lookup('vars', overrides_var_name, default=[]) }}"
         extras: "{{ lookup('vars', extras_var_name, default=[]) }}"
+        removals: "{{ lookup('vars', removals_var_name, default=[]) }}"
 
     - name: Set helper vars
       ansible.builtin.set_fact:
         overrides_exist: "{{ overrides | length > 0 }}"
+        removals_exist: "{{ removals | length > 0 }}"
+
+    - name: Remove entries from var {{ original_var_name }}
+      when: removals_exist
+      block:
+        - name: Set filtered_var to var {{ original_var_name }}
+          ansible.builtin.set_fact:
+            filtered_var: "{{ lookup('vars', original_var_name) }}"
+
+        - name: Remove entries filtered_var
+          ansible.builtin.set_fact:
+            filtered_var: "{{ filtered_var | selectattr('name', '!=', item) | list }}"
+          loop: "{{ removals }}"
+
+        - name: Assign filtered_var var to {{ original_var_name }}  # noqa: var-naming
+          ansible.builtin.set_fact:
+            "{{ original_var_name }}": "{{ filtered_var }}"
 
     - name: Apply overrides to var {{ original_var_name }}
       when: overrides_exist

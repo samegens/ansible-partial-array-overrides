@@ -32,8 +32,6 @@
         expected_some_var:
           - name: subvar1
             value: node1
-          - name: subvar2
-            value: generic
           - name: subvar3
             value: node1
       when: inventory_hostname == 'node1'

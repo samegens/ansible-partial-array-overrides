@@ -7,6 +7,9 @@ some_var_extras:
   - name: subvar3
     value: node1
 
+some_var_removals:
+  - subvar2
+
 some_other_var_overrides:
   - name: subvar3
     value: node1
