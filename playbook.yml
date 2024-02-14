@@ -12,10 +12,15 @@
       ansible.builtin.include_tasks:
         file: tasks/loop_patch_var.yml
       loop:
-        - some_var
-        - some_other_var
+        - var_name: some_var
+          id_field: name
+        - var_name: some_other_var
+          id_field: id
       loop_control:
-        loop_var: original_var_name
+        loop_var: name_and_id_field
+      vars:
+        original_var_name: "{{ name_and_id_field.var_name }}"
+        id_field: "{{ name_and_id_field.id_field }}"
 
     - name: Show final some_var
       ansible.builtin.debug:
@@ -41,11 +46,11 @@
         that: some_other_var == expected_some_other_var
       vars:
         expected_some_other_var:
-          - name: subvar3
+          - id: subvar3
             value: node1
-          - name: subvar4
+          - id: subvar4
             value: generic
-          - name: subvar5
+          - id: subvar5
             value: node1
       when: inventory_hostname == 'node1'
 
@@ -67,11 +72,11 @@
         that: some_other_var == expected_some_other_var
       vars:
         expected_some_other_var:
-          - name: subvar3
+          - id: subvar3
             value: generic
-          - name: subvar4
+          - id: subvar4
             value: node2
-          - name: subvar5
+          - id: subvar5
             value: node2
       when: inventory_hostname == 'node2'
 
@@ -91,8 +96,8 @@
         that: some_other_var == expected_some_other_var
       vars:
         expected_some_other_var:
-          - name: subvar3
+          - id: subvar3
             value: generic
-          - name: subvar4
+          - id: subvar4
             value: generic
       when: inventory_hostname == 'node3'

@@ -28,7 +28,7 @@
 
         - name: Remove entries filtered_var
           ansible.builtin.set_fact:
-            filtered_var: "{{ filtered_var | selectattr('name', '!=', item) | list }}"
+            filtered_var: "{{ filtered_var | selectattr(id_field, '!=', item) | list }}"
           loop: "{{ removals }}"
 
         - name: Assign filtered_var var to {{ original_var_name }}  # noqa: var-naming
@@ -48,7 +48,7 @@
             patched_var: "{{ patched_var + [patched_item] }}"
           loop: "{{ lookup('vars', original_var_name) }}"
           vars:
-            override: "{{ (overrides | selectattr('name', 'equalto', item.name) | first) | default({}) }}"
+            override: "{{ (overrides | selectattr(id_field, 'equalto', item[id_field]) | first) | default({}) }}"
             patched_item: "{{ item | combine(override) }}"
 
         - name: Assign patched var to {{ original_var_name }}  # noqa: var-naming

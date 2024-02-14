@@ -5,7 +5,7 @@ some_var:
     value: generic
 
 some_other_var:
-  - name: subvar3
+  - id: subvar3
     value: generic
-  - name: subvar4
+  - id: subvar4
     value: generic
